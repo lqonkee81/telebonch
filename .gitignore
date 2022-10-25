@@ -1,6 +1,10 @@
 # Folders
-./.idea/
-./__pycache__/
+/.idea/
+/__pycache__/
+/DATABASE/
+/venv/
+
 
 # Files
-config.py
+/config.py
+/test.py
