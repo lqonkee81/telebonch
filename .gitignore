@@ -4,7 +4,10 @@
 /DATABASE/
 /venv/
 
+src/__pycache__/
+/handlers/__pycache__/
+
 
 # Files
-/config.py
-/test.py
+/src/config.py
+/src/test.py

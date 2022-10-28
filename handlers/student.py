@@ -1,8 +1,24 @@
 from aiogram import Dispatcher, types
 
+# Машина состояний
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+
 # Database modules
 from DataBase import DbHandler
 from DataBase import DataBaseExceptions
+
+
+class FSMstudent(StatesGroup):
+    """
+    Машина состояния для первоначальной регистрации пользователя
+    """
+    group = State()
+    status = State()
+
+    name = State()
+    sorname = State()
+
 
 DESCRIPTION = """
 Этот бот разрабатывается для помощи бедным студентам, дабы те могли как нормальные люди смотреть расписание.

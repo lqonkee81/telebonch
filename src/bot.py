@@ -1,5 +1,5 @@
 from aiogram import executor
-from create_bot import DP
+from src.create_bot import DP
 
 # Работа с базой данных
 from DataBase import DbHandler
