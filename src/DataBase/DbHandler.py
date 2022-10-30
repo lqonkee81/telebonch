@@ -1,31 +1,22 @@
-from DataBase import User
+from src.DataBase import User
 
 # Кастомные исключения
-from DataBase import DataBaseExceptions
-from DataBase import UserExceptions
+from src.DataBase import DataBaseExceptions
 
 # База данных ( точнее ее обертка )
 import sqlite3
 
-DATA_BASE_PATH = "DATABASE/db.db"
+DATA_BASE_PATH = "../DATABASE/db.db"
 
 
 async def registration_user(user_id: int, user_group: str, user_status: str):
     """
     Занимается регистрацией пользователя в базе данных
 
-    Возвращаемые коды:
-        Все ок:
-            0: Регистрация прошла успешно
-
-        Ошибки:
-            1: Пользователь уже есть в базе данных
-            2: Пока не придумал
-
     :param user_id: id пользователя
     :param user_group: группа пользователя
     :param user_status: статус пользователя ( студен/староста/преподаватель )
-    :return: В случае успеха 0, иначе код ошибки, список которых есть выше
+    :return: Ничего
     """
 
     global DB
@@ -54,6 +45,7 @@ async def registration_user(user_id: int, user_group: str, user_status: str):
 async def delete_user(user_id: int) -> None:
     """
     Удаление пользователя из базы данных
+
     :param user_id: Id пользователя
     :return: None
     """
@@ -65,6 +57,23 @@ async def delete_user(user_id: int) -> None:
 
     else:
         print("User doesn't exists")
+        raise DataBaseExceptions.UserDoesNotExist
+
+
+async def get_user_group(user_id: int) -> str:
+    """
+    Получение группы пользователя из базы данных
+
+    :param user_id: Id пользователя
+    :return:
+    """
+
+    CURSOR.execute(f"SELECT s_group FROM users WHERE id = {user_id}")
+    userGroup = CURSOR.fetchone()
+    if userGroup:
+        return userGroup[0]
+
+    else:
         raise DataBaseExceptions.UserDoesNotExist
 
 

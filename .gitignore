@@ -5,9 +5,9 @@
 /venv/
 
 src/__pycache__/
-/handlers/__pycache__/
+/src/handlers/__pycache__/
 
+/files/
 
 # Files
 /src/config.py
-/src/test.py

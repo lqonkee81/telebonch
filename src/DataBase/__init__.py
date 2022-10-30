@@ -6,7 +6,6 @@ User - Класс пользователя
 UserExceptions - Кастомные исключения при операциях с классом пользователя
 """
 
-from DataBase import User
-from DataBase import DbHandler
-from DataBase import DataBaseExceptions
-from DataBase import UserExceptions
+from src.DataBase import DbHandler
+from src.DataBase import DataBaseExceptions
+from src.DataBase import User

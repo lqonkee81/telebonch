@@ -8,18 +8,17 @@
 from aiogram import Dispatcher, types
 
 # Машина состояний
-from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 # Database modules
-from DataBase import DbHandler
-from DataBase import DataBaseExceptions
+from src.DataBase import DbHandler
+from src.DataBase import DataBaseExceptions
 
 # Keyboards
-from keyboards import kb_start
+from src.keyboards import kb_start
 
 # Student schedule parser
-from Parser import Parser
+from src.Parser import GroupsParser
 
 
 class FSMstudent_registration(StatesGroup):
@@ -57,8 +56,14 @@ async def start(messge: types.Message) -> None:
                         )
 
 
-# Add user to database
 async def setting_up_user(messsage: types.Message) -> None:
+    """
+    Стучится в базу с просьбой занести туда пользователя
+
+    :param messsage:
+    :return:
+    """
+
     # Флаг отвественный за валидность данных
     isDataValid = True
 
@@ -105,8 +110,13 @@ async def setting_up_user(messsage: types.Message) -> None:
         print("!!!User already exists!!!")
 
 
-# Delete user from database
-async def delete_user(message: types.Message):
+async def delete_user(message: types.Message) -> None:
+    """
+    Стучится в базу с просьбой удалить пользователя
+
+    :param message:
+    :return:
+    """
     user_id = message.from_user.id
 
     try:
@@ -117,8 +127,9 @@ async def delete_user(message: types.Message):
         await message.answer("Тебя и так не было")
 
 
-async def get_schudule(messge: types.Message):
-    await messge.answer(text=Parser.ParseGroups()[0][0])
+async def get_schudule(messge: types.Message) -> None:
+    userGroup = await DbHandler.get_user_group(messge.from_user.id)
+    await messge.answer(text=userGroup)
 
 
 def register_handlers_student(dp: Dispatcher):

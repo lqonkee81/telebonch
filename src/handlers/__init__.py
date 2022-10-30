@@ -5,7 +5,7 @@ handman - Обработчик сообщений от старосты
 other - Обработчик неожидаемых сообщений
 """
 
-from handlers import profesor
-from handlers import student
-from handlers import handman
-from handlers import other
+from src.handlers import profesor
+from src.handlers import student
+from src.handlers import handman
+from src.handlers import other

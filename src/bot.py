@@ -2,7 +2,7 @@ from aiogram import executor
 from src.create_bot import DP
 
 # Обработчики сообщений
-from handlers import student, other
+from src.handlers import student, other
 
 student.register_handlers_student(DP)
 other.register_handlers_other(DP)
