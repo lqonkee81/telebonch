@@ -1,6 +1,9 @@
 """
-Parser - парсинг расписания студентов
+Parser - Парсер расписания студентов
+Schedule - Абстракция расписания
+Lesson - Абстракция занятия
 """
 
 from Parser import Parser
-from Schedule import Schedule
+from Parser import Schedule
+from Parser import Lesson

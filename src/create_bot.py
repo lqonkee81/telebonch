@@ -1,3 +1,7 @@
+"""
+Здесь создается объект бота и диспетчера
+"""
+
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 

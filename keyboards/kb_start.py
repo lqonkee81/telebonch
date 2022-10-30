@@ -1,6 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
-START_BUTTONS = sorted(["/Расписание", "/Kek"])
+START_BUTTONS = sorted(["/delme", "/Расписание"])
 
 
 def get_start_keyboard():

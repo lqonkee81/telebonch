@@ -1,9 +1,6 @@
 from aiogram import executor
 from src.create_bot import DP
 
-# Работа с базой данных
-from DataBase import DbHandler
-
 # Обработчики сообщений
 from handlers import student, other
 
@@ -14,12 +11,6 @@ other.register_handlers_other(DP)
 # Startup function
 async def get_ready(_):
     print("-------------------------Bot is started-------------------------")
-
-    print("DATA BASE: ")
-
-    bd = DbHandler.get_full_data_base()
-    for i in bd:
-        print(i)
 
 
 # Shutdown function
@@ -32,5 +23,4 @@ if __name__ == "__main__":
                            skip_updates=True,
                            on_startup=get_ready,
                            on_shutdown=shutdown,
-
                            )

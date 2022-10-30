@@ -1,3 +1,10 @@
+"""
+Обработчик сообщений от студента
+
+В скором времени тут появится машина состояний, чтобы сделать адекватную регистрацию вместо
+временного кастыля в виде команды /setme
+"""
+
 from aiogram import Dispatcher, types
 
 # Машина состояний
@@ -8,8 +15,14 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from DataBase import DbHandler
 from DataBase import DataBaseExceptions
 
+# Keyboards
+from keyboards import kb_start
 
-class FSMstudent(StatesGroup):
+# Student schedule parser
+from Parser import Parser
+
+
+class FSMstudent_registration(StatesGroup):
     """
     Машина состояния для первоначальной регистрации пользователя
     """
@@ -40,7 +53,7 @@ DESCRIPTION = """
 async def start(messge: types.Message) -> None:
     await messge.answer(text=DESCRIPTION,
                         parse_mode="HTML",
-                        # reply_markup=kb_start.get_start_keyboard(),
+                        reply_markup=kb_start.get_start_keyboard(),
                         )
 
 
@@ -52,7 +65,6 @@ async def setting_up_user(messsage: types.Message) -> None:
     try:
         msg_as_list = list(map(str, messsage.text.split()))
     except:
-
         return ...
 
     try:
@@ -105,7 +117,12 @@ async def delete_user(message: types.Message):
         await message.answer("Тебя и так не было")
 
 
+async def get_schudule(messge: types.Message):
+    await messge.answer(text=Parser.ParseGroups()[0][0])
+
+
 def register_handlers_student(dp: Dispatcher):
     dp.register_message_handler(start, commands=["start", "help"])
     dp.register_message_handler(setting_up_user, commands=["setme"])
     dp.register_message_handler(delete_user, commands=['delme'])
+    dp.register_message_handler(get_schudule, commands=['расписание'])
