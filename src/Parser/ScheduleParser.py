@@ -4,7 +4,8 @@ import requests
 from bs4 import BeautifulSoup as bs
 
 from src.Parser import GroupsParser
-from src.Schedule import Lesson, Schedule
+
+DEGUB = True
 
 
 def __make_url(userGroup) -> str:
@@ -14,6 +15,9 @@ def __make_url(userGroup) -> str:
     :param userGroup: Учебная группа пользователя
     :return: Урл на страницу с распианием группы пользователя
     """
+    if DEGUB:
+        print("\t\t\t\tDEBUG: SCHEDULE_PARSER -> __make_url")
+
     groupsList = GroupsParser.getGroupsList()
     groupLink = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
 
@@ -23,7 +27,7 @@ def __make_url(userGroup) -> str:
                 groupLink += j.get("group_id")
 
     groupLink += "&date=" + str(date.today())
-    groupLink += "&date=" + "2022-10-31"
+    # groupLink += "&date=" + "2022-10-31"
     return groupLink
 
 
@@ -34,6 +38,10 @@ def __get_html(userGroup: str) -> None:
     :param userGroup: Учебная группа пользователя
     :return: Ничего не возвращает
     """
+
+    if DEGUB:
+        print("\t\t\t\tDEBUG: SCHEDULE_PARSER -> __get_html")
+
     URL = __make_url(userGroup)
 
     HEADERS = {
@@ -48,7 +56,10 @@ def __get_html(userGroup: str) -> None:
         src.write(html.text)
 
 
-def getWeekSchudule(userGroup: str) -> list:
+def get_week_schudule(userGroup: str) -> list:
+    if DEGUB:
+        print("\t\t\t\tDEBUG: SCHEDULE_PARSER -> get_week_schudule")
+
     # __get_html(userGroup)
     htmlPath = "../../files/" + userGroup + "_schedule.html"
 
@@ -58,9 +69,12 @@ def getWeekSchudule(userGroup: str) -> list:
     soup = bs(html, "lxml")
 
     for dayNumber in range(1, 7):
+        weekDay = soup.find_all("div", class_="vt238")
         lessons = soup.find("div", class_="vt236").find_all(class_=f"vt239 rasp-day rasp-day{dayNumber}")
         lessonNumber = soup.find_all("div", class_="vt283")  # Номер занятия по порядку
+        lessonTime = soup.find("div", class_="vt239")
 
+        print(weekDay[dayNumber - 1].text.strip().upper())
         number = -1
         for lesson in lessons:
             number += 1
@@ -68,7 +82,6 @@ def getWeekSchudule(userGroup: str) -> list:
             teacherName = lesson.find("span", class_="teacher")  # имя преподавателя
             audinceNumber = lesson.find("div", class_="vt242")  # нормер аудитории
             lesType = lesson.find("div", class_="vt243 vt243b")  # тип занятия
-            weekDay = lesson.find_parent("div", class_="vt238")
 
             if lesType == None:
                 lesType = lesson.find("div", class_="vt243 vt243a")
@@ -77,7 +90,8 @@ def getWeekSchudule(userGroup: str) -> list:
                 lesType = lesson.find("div", class_="vt243")
 
             if lesName != None:
-                print("DAYNUMBER: ", weekDay)
+                # print(lessonTime[number].text.strip())
+                print(lessonTime.text)
                 print(lessonNumber[number].text.strip())
                 print(lesName.text.strip())
                 print(teacherName.text.strip())
@@ -91,4 +105,4 @@ def getWeekSchudule(userGroup: str) -> list:
 
 
 if __name__ == "__main__":
-    getWeekSchudule("ИБС-11")
+    get_week_schudule("ИБС-11")
