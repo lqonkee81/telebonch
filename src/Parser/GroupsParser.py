@@ -1,8 +1,8 @@
-from bs4 import BeautifulSoup as bs
 import requests
+from bs4 import BeautifulSoup as bs
 
 # HTML_FILE = "../files/src.html"
-HTML_FILE = "../../files/src.html"
+HTML_FILE = "../../files/groups.html"
 GROUPS_URL = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
 GROUPS_LIST = list()
 
@@ -28,9 +28,9 @@ def getGroupsList() -> list:
     Получает список назавний факультетов и содержащихся в них групп
 
     :rtype: object
-    :return: Ничего не возвращет
+    :return: возвращает список групп
     """
-
+    __get_html()
     with open(HTML_FILE, 'r') as src:
         html = src.read()
 

@@ -1,6 +1,6 @@
 class Schedule:
     def __init__(self, weekInfo: str):
-        self.weekInfo = weekInfo
+        self.lessons = list()
 
     def get_today_schedule(self):
         pass

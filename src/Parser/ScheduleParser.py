@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 
 from src.Parser import GroupsParser
+from src.Schedule import Lesson
 
 DEGUB = True
 
@@ -27,7 +28,6 @@ def __make_url(userGroup) -> str:
                 groupLink += j.get("group_id")
 
     groupLink += "&date=" + str(date.today())
-    # groupLink += "&date=" + "2022-10-31"
     return groupLink
 
 
@@ -57,10 +57,15 @@ def __get_html(userGroup: str) -> None:
 
 
 def get_week_schudule(userGroup: str) -> list:
+    """
+
+    :param userGroup: Группа пользователя
+    :return: list объектов Schedule ( по факту расписание кароч )
+    """
     if DEGUB:
         print("\t\t\t\tDEBUG: SCHEDULE_PARSER -> get_week_schudule")
 
-    # __get_html(userGroup)
+    __get_html(userGroup)
     htmlPath = "../../files/" + userGroup + "_schedule.html"
 
     with open(htmlPath, 'r') as src:
@@ -68,38 +73,52 @@ def get_week_schudule(userGroup: str) -> list:
 
     soup = bs(html, "lxml")
 
-    for dayNumber in range(1, 7):
-        weekDay = soup.find_all("div", class_="vt238")
-        lessons = soup.find("div", class_="vt236").find_all(class_=f"vt239 rasp-day rasp-day{dayNumber}")
-        lessonNumber = soup.find_all("div", class_="vt283")  # Номер занятия по порядку
-        lessonTime = soup.find("div", class_="vt239")
+    scheduleTable = soup.find("div", class_="vt236")  # Таблицца с расписанием
+    weekDaysTable = scheduleTable.find("div", class_="vt244 vt244a")  # Таблица с днями недели и датой
+    lines = scheduleTable.find_all("div", class_="vt244")
+    lines = lines[1::]
 
-        print(weekDay[dayNumber - 1].text.strip().upper())
-        number = -1
-        for lesson in lessons:
-            number += 1
-            lesName = lesson.find("div", class_="vt240")  # название предмета
-            teacherName = lesson.find("span", class_="teacher")  # имя преподавателя
-            audinceNumber = lesson.find("div", class_="vt242")  # нормер аудитории
-            lesType = lesson.find("div", class_="vt243 vt243b")  # тип занятия
+    weekDays = weekDaysTable.find("div", class_="vt237 vt237a").find_all_next("div", class_="vt237")
+    daysList = list()
+
+    for day in weekDays:
+        wd = day.find_next("div", class_='vt238')
+
+        daysList.append(
+            str(day.contents[0].strip()) + ' ' + str(wd.text.strip())
+        )
+
+    times = list()
+    for i in lines:
+        tmp = i.find_next("div", class_="vt239")
+        times.append(str(tmp.contents[2]) + '-' + str(tmp.contents[4]))
+
+    for i in range(0, len(daysList)):
+        scheduleDay = soup.find_all("div", class_=f"vt239 rasp-day rasp-day{i + 1}")
+
+        print()
+        print(daysList[i])
+        for lesson in range(len(scheduleDay)):
+            lesName = scheduleDay[lesson].find("div", class_="vt240")
+            lesProfessor = scheduleDay[lesson].find("span", class_="teacher")
+            audinceNumber = scheduleDay[lesson].find("div", class_="vt242")
+
+            lesType = scheduleDay[lesson].find("div", class_="vt243 vt243b")  # тип занятия
 
             if lesType == None:
-                lesType = lesson.find("div", class_="vt243 vt243a")
+                lesType = scheduleDay[lesson].find("div", class_="vt243 vt243a")
 
             if lesType == None:
-                lesType = lesson.find("div", class_="vt243")
+                lesType = scheduleDay[lesson].find("div", class_="vt243")
 
             if lesName != None:
-                # print(lessonTime[number].text.strip())
-                print(lessonTime.text)
-                print(lessonNumber[number].text.strip())
-                print(lesName.text.strip())
-                print(teacherName.text.strip())
-                print(audinceNumber.text.strip()[6::])
-                print(lesType.text.strip())
-                print()
+                les = Lesson.Lesson(name=lesName.text.strip(),
+                                    time=times[lesson],
+                                    audienceNumber=audinceNumber.text.strip(),
+                                    proffesorName=lesProfessor.text.strip(),
+                                    type=lesType.text.strip())
 
-                print()
+                print(les, les.is_full(), end='\n\n', sep='\n')
 
     return list()
 
