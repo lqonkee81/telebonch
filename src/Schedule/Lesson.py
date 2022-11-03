@@ -6,7 +6,7 @@ class Lesson:
         self.proffesorName = proffesorName
         self.type = type
 
-    def is_full(self):
+    def is_full(self) -> bool:
         if any([
             self.name == '',
             self.time == '',
@@ -18,5 +18,5 @@ class Lesson:
 
         return True
 
-    def __str__(self):
-        return f"{self.name}\n{self.type}\n{self.time}\n{self.audienceNumber}\n{self.proffesorName}"
+    def __str__(self) -> str:
+        return f"{self.name}\n{self.type}\n{self.time}\n{self.audienceNumber}\n{self.proffesorName}\n"

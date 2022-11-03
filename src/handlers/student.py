@@ -6,19 +6,16 @@
 """
 
 from aiogram import Dispatcher, types
-
 # Машина состояний
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
+from src.DataBase import DataBaseExceptions
 # Database modules
 from src.DataBase import DbHandler
-from src.DataBase import DataBaseExceptions
-
+# Student schedule parser
+from src.Parser import ScheduleParser
 # Keyboards
 from src.keyboards import kb_start
-
-# Student schedule parser
-from src.Parser import GroupsParser
 
 
 class FSMstudent_registration(StatesGroup):
@@ -129,7 +126,8 @@ async def delete_user(message: types.Message) -> None:
 
 async def get_schudule(messge: types.Message) -> None:
     userGroup = await DbHandler.get_user_group(messge.from_user.id)
-    await messge.answer(text=userGroup)
+    schedule = await ScheduleParser.get_week_schedule(userGroup)
+    await messge.answer(text=schedule.get_week_schedule())
 
 
 def register_handlers_student(dp: Dispatcher):

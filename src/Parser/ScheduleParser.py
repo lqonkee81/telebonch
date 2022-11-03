@@ -1,3 +1,4 @@
+import os.path
 from datetime import date
 
 import requests
@@ -5,11 +6,12 @@ from bs4 import BeautifulSoup as bs
 
 from src.Parser import GroupsParser
 from src.Schedule import Lesson
+from src.Schedule import Schedule
 
-DEGUB = True
+DEGUB = False
 
 
-def __make_url(userGroup) -> str:
+async def __make_url(userGroup: str, scheduleDate=None) -> str:
     """
     Формирует адресс запроса для дальнейшего парсинга
 
@@ -27,11 +29,15 @@ def __make_url(userGroup) -> str:
             if j.get("group_name") == userGroup:
                 groupLink += j.get("group_id")
 
-    groupLink += "&date=" + str(date.today())
+    if scheduleDate == None:
+        scheduleDate = str(date.today())
+
+    groupLink += "&date=" + scheduleDate
+
     return groupLink
 
 
-def __get_html(userGroup: str) -> None:
+async def __get_html(userGroup: str) -> None:
     """
     Получает разметку страницы и сохраняет ее в файл
 
@@ -39,10 +45,13 @@ def __get_html(userGroup: str) -> None:
     :return: Ничего не возвращает
     """
 
-    if DEGUB:
-        print("\t\t\t\tDEBUG: SCHEDULE_PARSER -> __get_html")
+    htmlPath = "../files/Schedules/" + userGroup + "_schedule.html"
 
-    URL = __make_url(userGroup)
+    if DEGUB:
+        msg = "DEBUG: SCHEDULE_PARSER -> __get_html"
+        print(f'{msg:-^20}')
+
+    URL = await __make_url(userGroup)
 
     HEADERS = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -50,23 +59,25 @@ def __get_html(userGroup: str) -> None:
     }
 
     html = requests.get(url=URL, headers=HEADERS)
-    htmlPath = "../../files/" + userGroup + "_schedule.html"
-
     with open(htmlPath, 'w') as src:
         src.write(html.text)
 
 
-def get_week_schudule(userGroup: str) -> list:
+async def get_week_schedule(userGroup: str) -> Schedule:
     """
-
+    Парсит расписание на неделю
     :param userGroup: Группа пользователя
-    :return: list объектов Schedule ( по факту расписание кароч )
+    :return: Schedule ( по факту расписание кароч )
     """
     if DEGUB:
-        print("\t\t\t\tDEBUG: SCHEDULE_PARSER -> get_week_schudule")
+        msg = "DEBUG: SCHEDULE_PARSER -> get_week_schudule"
+        print(f"{msg:.^20}")
 
-    __get_html(userGroup)
-    htmlPath = "../../files/" + userGroup + "_schedule.html"
+    htmlPath = "../files/Schedules/" + userGroup + "_schedule.html"
+
+    if not os.path.exists(htmlPath):
+        """ Проверяем существует-ли готовый файл с расписанием """
+        await __get_html(userGroup)
 
     with open(htmlPath, 'r') as src:
         html = src.read()
@@ -93,17 +104,17 @@ def get_week_schudule(userGroup: str) -> list:
         tmp = i.find_next("div", class_="vt239")
         times.append(str(tmp.contents[2]) + '-' + str(tmp.contents[4]))
 
+    ls = list()
     for i in range(0, len(daysList)):
         scheduleDay = soup.find_all("div", class_=f"vt239 rasp-day rasp-day{i + 1}")
 
-        print()
         print(daysList[i])
         for lesson in range(len(scheduleDay)):
-            lesName = scheduleDay[lesson].find("div", class_="vt240")
-            lesProfessor = scheduleDay[lesson].find("span", class_="teacher")
-            audinceNumber = scheduleDay[lesson].find("div", class_="vt242")
 
-            lesType = scheduleDay[lesson].find("div", class_="vt243 vt243b")  # тип занятия
+            lesName = scheduleDay[lesson].find("div", class_="vt240")  # Название занятия
+            lesProfessor = scheduleDay[lesson].find("span", class_="teacher")  # Имя преподователя
+            audinceNumber = scheduleDay[lesson].find("div", class_="vt242")  # Номер аудитории занятия
+            lesType = scheduleDay[lesson].find("div", class_="vt243 vt243b")  # Тип занятия
 
             if lesType == None:
                 lesType = scheduleDay[lesson].find("div", class_="vt243 vt243a")
@@ -117,11 +128,7 @@ def get_week_schudule(userGroup: str) -> list:
                                     audienceNumber=audinceNumber.text.strip(),
                                     proffesorName=lesProfessor.text.strip(),
                                     type=lesType.text.strip())
+                ls.append(les)
 
-                print(les, les.is_full(), end='\n\n', sep='\n')
-
-    return list()
-
-
-if __name__ == "__main__":
-    get_week_schudule("ИБС-11")
+    schedule = Schedule.Schedule(ls)
+    return schedule

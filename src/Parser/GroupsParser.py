@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 
 # HTML_FILE = "../files/src.html"
-HTML_FILE = "../../files/groups.html"
+HTML_FILE = "../files/groups.html"
 GROUPS_URL = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
 GROUPS_LIST = list()
 
