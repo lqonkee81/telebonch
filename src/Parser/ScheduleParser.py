@@ -4,9 +4,9 @@ from datetime import date
 import requests
 from bs4 import BeautifulSoup as bs
 
-from src.Parser import GroupsParser
-from src.Schedule import Lesson
-from src.Schedule import Schedule
+from Parser import GroupsParser
+from Schedule import Lesson
+from Schedule import Schedule
 
 DEGUB = False
 
@@ -21,7 +21,7 @@ async def __make_url(userGroup: str, scheduleDate=None) -> str:
     if DEGUB:
         print("\t\t\t\tDEBUG: SCHEDULE_PARSER -> __make_url")
 
-    groupsList = GroupsParser.getGroupsList()
+    groupsList = await GroupsParser.getGroupsList()
     groupLink = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
 
     for i in groupsList:

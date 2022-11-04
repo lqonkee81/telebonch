@@ -6,16 +6,12 @@
 """
 
 from aiogram import Dispatcher, types
-# Машина состояний
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from src.DataBase import DataBaseExceptions
-# Database modules
-from src.DataBase import DbHandler
-# Student schedule parser
-from src.Parser import ScheduleParser
-# Keyboards
-from src.keyboards import kb_start
+from DataBase import DataBaseExceptions
+from DataBase import DbHandler
+from Parser import ScheduleParser
+from keyboards import kb_start
 
 
 class FSMstudent_registration(StatesGroup):
@@ -125,9 +121,14 @@ async def delete_user(message: types.Message) -> None:
 
 
 async def get_schudule(messge: types.Message) -> None:
-    userGroup = await DbHandler.get_user_group(messge.from_user.id)
-    schedule = await ScheduleParser.get_week_schedule(userGroup)
-    await messge.answer(text=schedule.get_week_schedule())
+    try:
+        userGroup = await DbHandler.get_user_group(messge.from_user.id)
+        schedule = await ScheduleParser.get_week_schedule(userGroup)
+        await messge.answer(text=schedule.get_week_schedule())
+    except DataBaseExceptions.UserDoesNotExist:
+        await messge.answer(text="Тебя нет в базе\nЛибо группа указа неверно")
+    except:
+        await messge.answer(text="Что-то пошло не так. Я хз что, так что сам пинай разраба, который меня сделал")
 
 
 def register_handlers_student(dp: Dispatcher):

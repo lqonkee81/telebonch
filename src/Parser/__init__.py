@@ -3,5 +3,5 @@ GroupsParser - Парсер факультетов и групп студент�
 ScheduleParser - Парсер расписания студентов
 """
 
-from src.Parser import GroupsParser
-from src.Parser import ScheduleParser
+from Parser import GroupsParser
+from Parser import ScheduleParser

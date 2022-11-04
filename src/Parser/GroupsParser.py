@@ -1,3 +1,5 @@
+import os.path
+
 import requests
 from bs4 import BeautifulSoup as bs
 
@@ -7,7 +9,7 @@ GROUPS_URL = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-student
 GROUPS_LIST = list()
 
 
-def __get_html() -> None:
+async def __get_html() -> None:
     """
     Получает разметку и сохраняет ее в файл
     """
@@ -23,14 +25,17 @@ def __get_html() -> None:
         scr.write(html.text)
 
 
-def getGroupsList() -> list:
+async def getGroupsList() -> list:
     """
     Получает список назавний факультетов и содержащихся в них групп
 
     :rtype: object
     :return: возвращает список групп
     """
-    __get_html()
+
+    if not os.path.exists(HTML_FILE):
+        await __get_html()
+
     with open(HTML_FILE, 'r') as src:
         html = src.read()
 
@@ -48,12 +53,3 @@ def getGroupsList() -> list:
         GROUPS_LIST.append((facultName, groupsList))
 
     return GROUPS_LIST
-
-
-def __test() -> None:
-    __get_html()
-    getGroupsList()
-
-
-if __name__ == "__main__":
-    __test()

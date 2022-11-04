@@ -1,10 +1,7 @@
-from src.DataBase import User
-
-# Кастомные исключения
-from src.DataBase import DataBaseExceptions
-
-# База данных ( точнее ее обертка )
 import sqlite3
+
+from DataBase import DataBaseExceptions
+from DataBase import User
 
 DATA_BASE_PATH = "../DATABASE/db.db"
 

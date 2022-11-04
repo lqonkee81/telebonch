@@ -3,6 +3,8 @@ class User:
         self.__id = id
         self.__group = group
         self.__status = status
+        self.__name = None
+        self._sorename = None
 
     def get_id(self):
         return self.__id
