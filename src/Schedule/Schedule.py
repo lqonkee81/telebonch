@@ -1,5 +1,5 @@
 class Schedule:
-    def __init__(self, lessonsList):
+    def __init__(self, lessonsList: list):
         self.lessonslist = lessonsList
         self.schedule_str = str()
 

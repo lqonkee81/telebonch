@@ -1,14 +1,36 @@
 import os.path
 from datetime import date
+from datetime import datetime
 
 import requests
-from bs4 import BeautifulSoup as bs
+from bs4 import BeautifulSoup as BS
 
 from Parser import GroupsParser
 from Schedule import Lesson
 from Schedule import Schedule
 
-DEGUB = False
+DEGUB = True
+
+
+async def __get_html_path(userGroup, weekNum=None) -> str:
+    """
+    Путь до файла с разметкой с расписанием
+
+    :param userGroup: Учебная группа пользователя
+    :return: Путь до файла с расписанием
+    """
+    checkPathFolder = f"../files/Schedules/{userGroup}"
+    if not os.path.exists(checkPathFolder):
+        """Проверяем существует ли папка группы с расписаниями"""
+        os.mkdir(checkPathFolder)
+
+    firstStydyWeek = date(datetime.now().year, 9, 1).isocalendar()[1]  # Номер первой учебной недели в году
+    weekNumberInYear = date(datetime.now().year, 11, 5).isocalendar()[1] + 1  # Номер недели на текущий момент
+    bonchWeek = weekNumberInYear - firstStydyWeek
+
+    html_path = f"{checkPathFolder}/sch_{bonchWeek}.html"  # Путь до файла с расписанием
+
+    return html_path
 
 
 async def __make_url(userGroup: str, scheduleDate=None) -> str:
@@ -19,7 +41,7 @@ async def __make_url(userGroup: str, scheduleDate=None) -> str:
     :return: Урл на страницу с распианием группы пользователя
     """
     if DEGUB:
-        print("\t\t\t\tDEBUG: SCHEDULE_PARSER -> __make_url")
+        print("DEBUG: SCHEDULE_PARSER -> __make_url")
 
     groupsList = await GroupsParser.getGroupsList()
     groupLink = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
@@ -29,7 +51,7 @@ async def __make_url(userGroup: str, scheduleDate=None) -> str:
             if j.get("group_name") == userGroup:
                 groupLink += j.get("group_id")
 
-    if scheduleDate == None:
+    if scheduleDate is None:
         scheduleDate = str(date.today())
 
     groupLink += "&date=" + scheduleDate
@@ -45,7 +67,7 @@ async def __get_html(userGroup: str) -> None:
     :return: Ничего не возвращает
     """
 
-    htmlPath = "../files/Schedules/" + userGroup + "_schedule.html"
+    htmlPath = await __get_html_path(userGroup)
 
     if DEGUB:
         msg = "DEBUG: SCHEDULE_PARSER -> __get_html"
@@ -73,7 +95,7 @@ async def get_week_schedule(userGroup: str) -> Schedule:
         msg = "DEBUG: SCHEDULE_PARSER -> get_week_schudule"
         print(f"{msg:.^20}")
 
-    htmlPath = "../files/Schedules/" + userGroup + "_schedule.html"
+    htmlPath = await __get_html_path(userGroup)
 
     if not os.path.exists(htmlPath):
         """ Проверяем существует-ли готовый файл с расписанием """
@@ -82,7 +104,7 @@ async def get_week_schedule(userGroup: str) -> Schedule:
     with open(htmlPath, 'r') as src:
         html = src.read()
 
-    soup = bs(html, "lxml")
+    soup = BS(html, "lxml")
 
     scheduleTable = soup.find("div", class_="vt236")  # Таблицца с расписанием
     weekDaysTable = scheduleTable.find("div", class_="vt244 vt244a")  # Таблица с днями недели и датой
@@ -100,15 +122,17 @@ async def get_week_schedule(userGroup: str) -> Schedule:
         )
 
     times = list()
+    numbers = list()
     for i in lines:
         tmp = i.find_next("div", class_="vt239")
         times.append(str(tmp.contents[2]) + '-' + str(tmp.contents[4]))
+        numbers.append(tmp.contents[0].text)
 
-    ls = list()
+    lessList = list()
     for i in range(0, len(daysList)):
+        lessList.append(6 * '=' + daysList[i].upper() + 6 * '=')
         scheduleDay = soup.find_all("div", class_=f"vt239 rasp-day rasp-day{i + 1}")
 
-        print(daysList[i])
         for lesson in range(len(scheduleDay)):
 
             lesName = scheduleDay[lesson].find("div", class_="vt240")  # Название занятия
@@ -127,8 +151,9 @@ async def get_week_schedule(userGroup: str) -> Schedule:
                                     time=times[lesson],
                                     audienceNumber=audinceNumber.text.strip(),
                                     proffesorName=lesProfessor.text.strip(),
-                                    type=lesType.text.strip())
-                ls.append(les)
+                                    type=lesType.text.strip(),
+                                    number=numbers[lesson])
+                lessList.append(les)
 
-    schedule = Schedule.Schedule(ls)
+    schedule = Schedule.Schedule(lessList)
     return schedule
