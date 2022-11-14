@@ -24,12 +24,15 @@ async def __get_html_path(userGroup, weekNum=None) -> str:
         """Проверяем существует ли папка группы с расписаниями"""
         os.mkdir(checkPathFolder)
 
-    firstStydyWeek = date(datetime.now().year, 9, 1).isocalendar()[1]  # Номер первой учебной недели в году
-    weekNumberInYear = date(datetime.now().year, 11, 5).isocalendar()[1] + 1  # Номер недели на текущий момент
-    bonchWeek = weekNumberInYear - firstStydyWeek
+    if weekNum is None:
+        day, month = datetime.now().day, datetime.now().month
+
+        firstStydyWeek = date(datetime.now().year, 9, 1).isocalendar()[1]  # Номер первой учебной недели в году
+        weekNumberInYear = date(datetime.now().year, int(month), int(day)).isocalendar()[
+                               1] + 1  # Номер недели на текущий момент
+        bonchWeek = weekNumberInYear - firstStydyWeek
 
     html_path = f"{checkPathFolder}/sch_{bonchWeek}.html"  # Путь до файла с расписанием
-
     return html_path
 
 
@@ -54,12 +57,13 @@ async def __make_url(userGroup: str, scheduleDate=None) -> str:
     if scheduleDate is None:
         scheduleDate = str(date.today())
 
+    print(f"TODAY DATE: {scheduleDate}")
     groupLink += "&date=" + scheduleDate
 
     return groupLink
 
 
-async def __get_html(userGroup: str) -> None:
+async def __get_html(userGroup: str, weekNum=None) -> None:
     """
     Получает разметку страницы и сохраняет ее в файл
 
@@ -67,7 +71,7 @@ async def __get_html(userGroup: str) -> None:
     :return: Ничего не возвращает
     """
 
-    htmlPath = await __get_html_path(userGroup)
+    htmlPath = await __get_html_path(userGroup, weekNum)
 
     if DEGUB:
         msg = "DEBUG: SCHEDULE_PARSER -> __get_html"
@@ -85,7 +89,7 @@ async def __get_html(userGroup: str) -> None:
         src.write(html.text)
 
 
-async def get_week_schedule(userGroup: str) -> Schedule:
+async def get_week_schedule(userGroup: str, weekNumber=None) -> Schedule:
     """
     Парсит расписание на неделю
     :param userGroup: Группа пользователя
@@ -95,7 +99,7 @@ async def get_week_schedule(userGroup: str) -> Schedule:
         msg = "DEBUG: SCHEDULE_PARSER -> get_week_schudule"
         print(f"{msg:.^20}")
 
-    htmlPath = await __get_html_path(userGroup)
+    htmlPath = await __get_html_path(userGroup, weekNumber)
 
     if not os.path.exists(htmlPath):
         """ Проверяем существует-ли готовый файл с расписанием """
