@@ -11,8 +11,7 @@ from Schedule import Schedule
 
 DEGUB = True
 
-
-def __get_html_path(userGroup, weekNum=None) -> str:
+async def __get_html_path(userGroup, weekNum=None) -> str:
     """
     Путь до файла с разметкой с расписанием
 
@@ -36,7 +35,7 @@ def __get_html_path(userGroup, weekNum=None) -> str:
     return html_path
 
 
-def __make_url(userGroup: str, scheduleDate=None) -> str:
+async def __make_url(userGroup: str, scheduleDate=None) -> str:
     """
     Формирует адресс запроса для дальнейшего парсинга
 
@@ -63,7 +62,7 @@ def __make_url(userGroup: str, scheduleDate=None) -> str:
     return groupLink
 
 
-def __get_html(userGroup: str, weekNum=None) -> None:
+async def __get_html(userGroup: str, weekNum=None) -> None:
     """
     Получает разметку страницы и сохраняет ее в файл
 
@@ -71,13 +70,13 @@ def __get_html(userGroup: str, weekNum=None) -> None:
     :return: Ничего не возвращает
     """
 
-    htmlPath = __get_html_path(userGroup, weekNum)
+    htmlPath = await __get_html_path(userGroup, weekNum)
 
     if DEGUB:
         msg = "DEBUG: SCHEDULE_PARSER -> __get_html"
         print(f'{msg:-^20}')
 
-    URL = __make_url(userGroup)
+    URL = await __make_url(userGroup)
 
     HEADERS = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -99,7 +98,7 @@ async def get_week_schedule(userGroup: str, weekNumber=None) -> Schedule:
         msg = "DEBUG: SCHEDULE_PARSER -> get_week_schudule"
         print(f"{msg:.^20}")
 
-    htmlPath = __get_html_path(userGroup, weekNumber)
+    htmlPath = await __get_html_path(userGroup, weekNumber)
 
     if not os.path.exists(htmlPath):
         """ Проверяем существует-ли готовый файл с расписанием """

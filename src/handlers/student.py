@@ -62,16 +62,8 @@ async def get_schudule(messge: types.Message) -> None:
     except DataBaseExceptions.UserDoesNotExist:
         await messge.answer(text="Тебя нет в базе\nЛибо группа указа неверно")
 
-    # except MessageTextIsEmpty:
-    #     await messge.answer(text="Походу занятий на этой недели нет. Либо я вру и нужно смотреть на сайте")
-
-    # except:
-    #     await messge.answer(text="Что-то пошло не так. Я хз что, так что сам пинай разраба, который меня сделал")
-
-    # userGroup = await DbHandler.get_user_group(messge.from_user.id)
-    # schedule = ScheduleParser.get_week_schedule(userGroup)
-    # await messge.answer(text=schedule.get_week_schedule(),
-    #                     parse_mode="HTML")
+    except:
+        await messge.answer(text="Что-то пошло не так. Я хз что, так что сам пинай разраба, который меня сделал")
 
 
 def register_handlers_student(dp: Dispatcher):

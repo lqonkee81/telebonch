@@ -9,5 +9,5 @@ class Schedule:
     def get_today_schedule(self):
         pass
 
-    def get_week_schedule(self):
+    def get_week_schedule(self) -> str:
         return self.schedule_str
