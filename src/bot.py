@@ -2,8 +2,9 @@ from aiogram import executor
 
 from DataBase import DbHandler
 from create_bot import DP, BOT
-from handlers import student, other
+from handlers import student, other, registration
 
+registration.register_register_handlers(DP)
 student.register_handlers_student(DP)
 other.register_handlers_other(DP)
 
@@ -14,7 +15,7 @@ async def get_ready(_):
 
     for user in users:
         userId = user[0]
-        await BOT.send_message(userId, text="Я снова работаю")
+        # await BOT.send_message(userId, text="Я снова работаю")
 
     print(users)
 
@@ -36,6 +37,6 @@ async def shutdown(_):
 if __name__ == "__main__":
     executor.start_polling(dispatcher=DP,
                            skip_updates=True,
-                           on_startup=get_ready,
-                           on_shutdown=shutdown,
+                           # on_startup=get_ready,
+                           # on_shutdown=shutdown,
                            )

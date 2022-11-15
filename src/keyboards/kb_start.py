@@ -3,7 +3,7 @@ from aiogram.types import ReplyKeyboardMarkup
 START_BUTTONS = sorted(["/delme", "/Расписание"])
 
 
-def get_start_keyboard():
+def get_keyboard():
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True,
                                    one_time_keyboard=True
                                    )

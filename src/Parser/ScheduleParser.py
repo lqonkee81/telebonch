@@ -12,7 +12,7 @@ from Schedule import Schedule
 DEGUB = True
 
 
-async def __get_html_path(userGroup, weekNum=None) -> str:
+def __get_html_path(userGroup, weekNum=None) -> str:
     """
     Путь до файла с разметкой с расписанием
 
@@ -36,7 +36,7 @@ async def __get_html_path(userGroup, weekNum=None) -> str:
     return html_path
 
 
-async def __make_url(userGroup: str, scheduleDate=None) -> str:
+def __make_url(userGroup: str, scheduleDate=None) -> str:
     """
     Формирует адресс запроса для дальнейшего парсинга
 
@@ -46,7 +46,7 @@ async def __make_url(userGroup: str, scheduleDate=None) -> str:
     if DEGUB:
         print("DEBUG: SCHEDULE_PARSER -> __make_url")
 
-    groupsList = await GroupsParser.getGroupsList()
+    groupsList = GroupsParser.getGroupsList()
     groupLink = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
 
     for i in groupsList:
@@ -63,7 +63,7 @@ async def __make_url(userGroup: str, scheduleDate=None) -> str:
     return groupLink
 
 
-async def __get_html(userGroup: str, weekNum=None) -> None:
+def __get_html(userGroup: str, weekNum=None) -> None:
     """
     Получает разметку страницы и сохраняет ее в файл
 
@@ -71,13 +71,13 @@ async def __get_html(userGroup: str, weekNum=None) -> None:
     :return: Ничего не возвращает
     """
 
-    htmlPath = await __get_html_path(userGroup, weekNum)
+    htmlPath = __get_html_path(userGroup, weekNum)
 
     if DEGUB:
         msg = "DEBUG: SCHEDULE_PARSER -> __get_html"
         print(f'{msg:-^20}')
 
-    URL = await __make_url(userGroup)
+    URL = __make_url(userGroup)
 
     HEADERS = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -99,11 +99,11 @@ async def get_week_schedule(userGroup: str, weekNumber=None) -> Schedule:
         msg = "DEBUG: SCHEDULE_PARSER -> get_week_schudule"
         print(f"{msg:.^20}")
 
-    htmlPath = await __get_html_path(userGroup, weekNumber)
+    htmlPath = __get_html_path(userGroup, weekNumber)
 
     if not os.path.exists(htmlPath):
         """ Проверяем существует-ли готовый файл с расписанием """
-        await __get_html(userGroup)
+        __get_html(userGroup)
 
     with open(htmlPath, 'r') as src:
         html = src.read()

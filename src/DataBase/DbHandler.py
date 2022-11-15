@@ -21,7 +21,7 @@ async def registration_user(user_id: int, user_group: str, user_status: str):
 
     user = User.User(user_id, user_group, user_status)
 
-    if (user.get_status() == "студент") or (user.get_status() == "староста"):
+    if (user.get_status().lower() == "студент") or (user.get_status().lower() == "староста"):
         '''
         Регистрация студента/старосты
         '''
@@ -37,6 +37,8 @@ async def registration_user(user_id: int, user_group: str, user_status: str):
         else:
             print("User already exists")
             raise DataBaseExceptions.UserAlreadyExist
+    else:
+        raise Exception()
 
 
 async def delete_user(user_id: int) -> None:
@@ -86,6 +88,21 @@ def get_full_data_base() -> list:
         db_as_list.append(i)
 
     return db_as_list
+
+
+async def is_user_exists(userId: str) -> bool:
+    """
+
+    :param userId:
+    :return:
+    """
+
+    CURSOR.execute("SELECT id FROM users WHERE id=(?)", userId)
+    answer = CURSOR.fetchone()
+    if not answer is None:
+        return True
+    else:
+        return False
 
 
 if __name__ != "__main__":

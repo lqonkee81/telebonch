@@ -9,7 +9,7 @@ GROUPS_URL = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-student
 GROUPS_LIST = list()
 
 
-async def __get_html() -> None:
+def __get_html() -> None:
     """
     Получает разметку и сохраняет ее в файл
     """
@@ -34,7 +34,7 @@ async def getGroupsList() -> list:
     """
 
     if not os.path.exists(HTML_FILE):
-        await __get_html()
+        __get_html()
 
     with open(HTML_FILE, 'r') as src:
         html = src.read()
