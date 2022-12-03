@@ -3,5 +3,6 @@ Schedule - Абстракция расписания
 Lesson - Абстракция занятия
 """
 
+from Schedule import DaySchedule
 from Schedule import Lesson
-from Schedule import Schedule
+from Schedule import WeekSchedule

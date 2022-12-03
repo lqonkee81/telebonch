@@ -6,10 +6,22 @@ import requests
 from bs4 import BeautifulSoup as BS
 
 from Parser import GroupsParser
+from Schedule import DaySchedule
 from Schedule import Lesson
-from Schedule import Schedule
+from Schedule import WeekSchedule
 
 DEGUB = True
+
+async def __get_bonch_week_number():
+    day, month = datetime.now().day, datetime.now().month
+
+    firstStydyWeek = date(datetime.now().year, 9, 1).isocalendar()[1]  # Номер первой учебной недели в году
+    weekNumberInYear = date(datetime.now().year, int(month), int(day)).isocalendar()[
+                           1] + 1  # Номер недели на текущий момент
+    bonchWeek = weekNumberInYear - firstStydyWeek
+
+    return bonchWeek
+
 
 async def __get_html_path(userGroup, weekNum=None) -> str:
     """
@@ -19,19 +31,16 @@ async def __get_html_path(userGroup, weekNum=None) -> str:
     :return: Путь до файла с расписанием
     """
     checkPathFolder = f"../files/Schedules/{userGroup}"
+    # checkPathFolder = f"../../files/Schedules/{userGroup}"
+
     if not os.path.exists(checkPathFolder):
         """Проверяем существует ли папка группы с расписаниями"""
         os.mkdir(checkPathFolder)
 
     if weekNum is None:
-        day, month = datetime.now().day, datetime.now().month
+        weekNum = await __get_bonch_week_number()
 
-        firstStydyWeek = date(datetime.now().year, 9, 1).isocalendar()[1]  # Номер первой учебной недели в году
-        weekNumberInYear = date(datetime.now().year, int(month), int(day)).isocalendar()[
-                               1] + 1  # Номер недели на текущий момент
-        bonchWeek = weekNumberInYear - firstStydyWeek
-
-    html_path = f"{checkPathFolder}/sch_{bonchWeek}.html"  # Путь до файла с расписанием
+    html_path = f"{checkPathFolder}/sch_{weekNum}.html"  # Путь до файла с расписанием
     return html_path
 
 
@@ -45,19 +54,26 @@ async def __make_url(userGroup: str, scheduleDate=None) -> str:
     if DEGUB:
         print("DEBUG: SCHEDULE_PARSER -> __make_url")
 
-    groupsList = GroupsParser.getGroupsList()
+    facultsList = await GroupsParser.getGroupsList()
     groupLink = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
 
-    for i in groupsList:
-        for j in i[1]:
-            if j.get("group_name") == userGroup:
-                groupLink += j.get("group_id")
+    for facult in facultsList:
+        group = facult.get_group_by_name(userGroup)
+
+        if group != None:
+            if DEGUB:
+                print(group)
+            groupLink += group.id
+            break
 
     if scheduleDate is None:
         scheduleDate = str(date.today())
 
     print(f"TODAY DATE: {scheduleDate}")
     groupLink += "&date=" + scheduleDate
+
+    if DEGUB:
+        print(groupLink)
 
     return groupLink
 
@@ -88,7 +104,7 @@ async def __get_html(userGroup: str, weekNum=None) -> None:
         src.write(html.text)
 
 
-async def get_week_schedule(userGroup: str, weekNumber=None) -> Schedule:
+async def get_week_schedule(userGroup: str, weekNumber=None) -> str:
     """
     Парсит расписание на неделю
     :param userGroup: Группа пользователя
@@ -102,7 +118,7 @@ async def get_week_schedule(userGroup: str, weekNumber=None) -> Schedule:
 
     if not os.path.exists(htmlPath):
         """ Проверяем существует-ли готовый файл с расписанием """
-        __get_html(userGroup)
+        await __get_html(userGroup)
 
     with open(htmlPath, 'r') as src:
         html = src.read()
@@ -131,9 +147,11 @@ async def get_week_schedule(userGroup: str, weekNumber=None) -> Schedule:
         times.append(str(tmp.contents[2]) + '-' + str(tmp.contents[4]))
         numbers.append(tmp.contents[0].text)
 
+    days = list()
     lessList = list()
     for i in range(0, len(daysList)):
-        lessList.append(6 * '=' + daysList[i].upper() + 6 * '=')
+        lessList.clear()
+        # lessList.append(6 * '=' + daysList[i].upper() + 6 * '=')
         scheduleDay = soup.find_all("div", class_=f"vt239 rasp-day rasp-day{i + 1}")
 
         for lesson in range(len(scheduleDay)):
@@ -157,6 +175,17 @@ async def get_week_schedule(userGroup: str, weekNumber=None) -> Schedule:
                                     type=lesType.text.strip(),
                                     number=numbers[lesson])
                 lessList.append(les)
+        scD = DaySchedule.DaySchedule(weekDay=6 * '=' + daysList[i].upper() + 6 * '=',
+                                      lessonsList=lessList.copy())
+        days.append(scD)
 
-    schedule = Schedule.Schedule(lessList)
-    return schedule
+    schedule = WeekSchedule.WeekSchedule(days)
+
+    return str(schedule)
+
+
+if __name__ == "__main__":
+    print(get_week_schedule("ИБС-11").get_week_schedule())
+
+else:
+    global SCHEDULE_DAY_PATH, SCHEDULE_WEEK_PATH

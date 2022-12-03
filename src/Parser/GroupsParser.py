@@ -3,13 +3,15 @@ import os.path
 import requests
 from bs4 import BeautifulSoup as bs
 
-# HTML_FILE = "../files/src.html"
+from Parser import Facult
+from Parser import Group
+
+# HTML_FILE = "../../files/groups.html"
 HTML_FILE = "../files/groups.html"
 GROUPS_URL = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
-GROUPS_LIST = list()
 
 
-def __get_html() -> None:
+async def __get_html() -> None:
     """
     Получает разметку и сохраняет ее в файл
     """
@@ -25,7 +27,7 @@ def __get_html() -> None:
         scr.write(html.text)
 
 
-async def getGroupsList() -> list:
+async def getGroupsList() -> Facult:
     """
     Получает список назавний факультетов и содержащихся в них групп
 
@@ -34,22 +36,23 @@ async def getGroupsList() -> list:
     """
 
     if not os.path.exists(HTML_FILE):
-        __get_html()
+        await __get_html()
 
     with open(HTML_FILE, 'r') as src:
         html = src.read()
 
     soup = bs(html, "lxml")
 
+    facultsList = list()
     for tables in soup.find_all(class_="vt252"):
         facultName = tables.find(class_="vt253").text.strip()  # Имя факультета
         groupsList = list()
 
         for i in tables.find_all('a', href=True):
-            groupId = i["href"]
-            groupsList.append({"group_name": i.text.strip(),
-                               "group_id": groupId})
+            group = Group.Group(i.text.strip(), i["href"])
+            groupsList.append(group)
 
-        GROUPS_LIST.append((facultName, groupsList))
+        facult = Facult.Facult(facultName, groupsList)
+        facultsList.append(facult)
 
-    return GROUPS_LIST
+    return facultsList

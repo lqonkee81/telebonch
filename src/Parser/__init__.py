@@ -3,5 +3,7 @@ GroupsParser - Парсер факультетов и групп студент�
 ScheduleParser - Парсер расписания студентов
 """
 
+from Parser import Facult
+from Parser import Group
 from Parser import GroupsParser
-from Parser import ScheduleParser
+from Parser import ScheduleStudentParser
