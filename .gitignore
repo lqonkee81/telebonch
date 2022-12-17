@@ -3,6 +3,7 @@
 /__pycache__/
 /DATABASE/
 /venv/
+/logs/
 
 src/__pycache__/
 /src/handlers/__pycache__/

@@ -1,5 +1,4 @@
 import os.path
-import asyncio
 from datetime import date
 from datetime import datetime
 
@@ -7,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup as BS
 
 import Parser.GroupsParser
+from Logger import Logger
 from Parser import GroupsParser
 from Schedule import StudentDaySchedule
 from Schedule import StudentLesson
@@ -15,7 +15,8 @@ from Schedule import WeekStudentSchedule
 
 class ScheduleStudentParser:
     def __init__(self, userGroup: str):
-        self.DEBUG = True
+        self.DEBUG = False
+        self.logger = Logger()
 
         self.userGroup = userGroup
         self.weekNum = None
@@ -36,15 +37,19 @@ class ScheduleStudentParser:
     def create_directories(self):
         if not os.path.exists("../files"):
             os.mkdir("../files")
+            self.logger.warning("Was created directory '../files'", __name__)
 
         if not os.path.exists("../files/Schedules"):
             os.mkdir("../files/Schedules")
+            self.logger.warning("Was created directory '../files/Schedules'", __name__)
 
         if not os.path.exists(self.folderWithHtmls):
             os.mkdir(self.folderWithHtmls)
+            self.logger.warning(f"Was created directory {self.folderWithHtmls}", __name__)
 
         if not os.path.exists(self.userHtmlFolder):
             os.mkdir(self.userHtmlFolder)
+            self.logger.warning(f"Was created directory {self.userHtmlFolder}", __name__)
 
     def __get_bonch_week_number(self):
         day, month = datetime.now().day, datetime.now().month
@@ -63,8 +68,7 @@ class ScheduleStudentParser:
         :param userGroup: Учебная группа пользователя
         :return: Урл на страницу с распианием группы пользователя
         """
-        if self.DEBUG:
-            print("DEBUG: SCHEDULE_PARSER -> __make_url")
+        self.logger.info("Making url", __name__)
 
         groupLink = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
         gp = GroupsParser.GroupsParser()
@@ -79,8 +83,6 @@ class ScheduleStudentParser:
                 groupLink += group.id
                 break
 
-
-        print(f"TODAY DATE: {self.scheduleDate}")
         groupLink += "&date=" + self.scheduleDate
 
         if self.DEBUG:
@@ -96,9 +98,7 @@ class ScheduleStudentParser:
         :return: Ничего не возвращает
         """
 
-        if self.DEBUG:
-            msg = "DEBUG: SCHEDULE_PARSER -> __get_html"
-            print(f"{msg:.^{len(msg) + 6}}")
+        self.logger.info(f"Downloading html for{self.userGroup}", __name__)
 
         html = requests.get(url=self.url, headers=self.__HEADERS)
         with open(self.html, 'w') as src:
@@ -110,6 +110,8 @@ class ScheduleStudentParser:
         :param userGroup: Группа пользователя
         :return: Schedule ( по факту расписание кароч )
         """
+        self.logger.info(f"Getting week schedule for {self.userGroup}", __name__)
+
         if self.DEBUG:
             msg = "DEBUG: SCHEDULE_PARSER -> get_week_schudule"
             print(f"{msg:.^{len(msg) + 6}}")
