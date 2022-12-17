@@ -3,7 +3,7 @@ class WeekSchedule:
         self.daysScheduleList = daysScheduleList
         self.schedule_str = str()
 
-    def get_today_schedule(self, date: str):
+    def get_today_schedule(self):
         pass
 
     def get_week_schedule(self) -> str:

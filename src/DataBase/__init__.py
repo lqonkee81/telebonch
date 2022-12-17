@@ -8,4 +8,3 @@ UserExceptions - Кастомные исключения при операция
 
 from DataBase import DataBaseExceptions
 from DataBase import DbHandler
-from DataBase import User

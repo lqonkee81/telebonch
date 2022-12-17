@@ -1,16 +1,19 @@
 import os.path
+import asyncio
 from datetime import date
 from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup as BS
 
+import Parser.GroupsParser
 from Parser import GroupsParser
-from Schedule import DaySchedule
-from Schedule import Lesson
-from Schedule import WeekSchedule
+from Schedule import StudentDaySchedule
+from Schedule import StudentLesson
+from Schedule import WeekStudentSchedule
 
 DEGUB = True
+
 
 async def __get_bonch_week_number():
     day, month = datetime.now().day, datetime.now().month
@@ -30,8 +33,7 @@ async def __get_html_path(userGroup, weekNum=None) -> str:
     :param userGroup: Учебная группа пользователя
     :return: Путь до файла с расписанием
     """
-    checkPathFolder = f"../files/Schedules/{userGroup}"
-    # checkPathFolder = f"../../files/Schedules/{userGroup}"
+    checkPathFolder = f"../files/Schedules/Students/{userGroup}"
 
     if not os.path.exists(checkPathFolder):
         """Проверяем существует ли папка группы с расписаниями"""
@@ -104,7 +106,7 @@ async def __get_html(userGroup: str, weekNum=None) -> None:
         src.write(html.text)
 
 
-async def get_week_schedule(userGroup: str, weekNumber=None) -> str:
+async def get_week_schedule(userGroup: str, weekNumber=None, name=None) -> str:
     """
     Парсит расписание на неделю
     :param userGroup: Группа пользователя
@@ -151,7 +153,6 @@ async def get_week_schedule(userGroup: str, weekNumber=None) -> str:
     lessList = list()
     for i in range(0, len(daysList)):
         lessList.clear()
-        # lessList.append(6 * '=' + daysList[i].upper() + 6 * '=')
         scheduleDay = soup.find_all("div", class_=f"vt239 rasp-day rasp-day{i + 1}")
 
         for lesson in range(len(scheduleDay)):
@@ -167,25 +168,40 @@ async def get_week_schedule(userGroup: str, weekNumber=None) -> str:
             if lesType == None:
                 lesType = scheduleDay[lesson].find("div", class_="vt243")
 
-            if lesName != None:
-                les = Lesson.Lesson(name=lesName.text.strip(),
-                                    time=times[lesson],
-                                    audienceNumber=audinceNumber.text.strip(),
-                                    proffesorName=lesProfessor.text.strip(),
-                                    type=lesType.text.strip(),
-                                    number=numbers[lesson])
-                lessList.append(les)
-        scD = DaySchedule.DaySchedule(weekDay=6 * '=' + daysList[i].upper() + 6 * '=',
+            if lesName is not None:
+                if name is None:
+                    les = StudentLesson.Lesson(name=lesName.text.strip(),
+                                        time=times[lesson],
+                                        audienceNumber=audinceNumber.text.strip(),
+                                        proffesorName=lesProfessor.text.strip(),
+                                        type=lesType.text.strip(),
+                                        number=numbers[lesson])
+                    lessList.append(les)
+                else:
+                    if lesProfessor.text.strip() == name:
+                        les = StudentLesson.Lesson(name=lesName.text.strip(),
+                                            time=times[lesson],
+                                            audienceNumber=audinceNumber.text.strip(),
+                                            proffesorName=lesProfessor.text.strip(),
+                                            type=lesType.text.strip(),
+                                            number=numbers[lesson])
+                        lessList.append(les)
+
+        scD = StudentDaySchedule.DaySchedule(weekDay=6 * '=' + daysList[i].upper() + 6 * '=',
                                       lessonsList=lessList.copy())
         days.append(scD)
 
-    schedule = WeekSchedule.WeekSchedule(days)
+    schedule = WeekStudentSchedule.WeekSchedule(days)
 
     return str(schedule)
 
 
-if __name__ == "__main__":
-    print(get_week_schedule("ИБС-11").get_week_schedule())
+async def get_all_groups_html():
+    groupsList = await Parser.GroupsParser.getGroupsList()
+    return str(groupsList)
 
+
+if __name__ == "__main__":
+    asyncio.run(get_all_groups_html())
 else:
     global SCHEDULE_DAY_PATH, SCHEDULE_WEEK_PATH

@@ -1,7 +1,7 @@
 import sqlite3
 
 from DataBase import DataBaseExceptions
-from DataBase import User
+from UserModels import User
 
 DATA_BASE_PATH = "../DATABASE/db.db"
 

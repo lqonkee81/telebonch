@@ -4,7 +4,6 @@ class Lesson:
         self.number = number
         self.time = time
         self.audienceNumber = audienceNumber
-        print("__init__", self.audienceNumber)
         self.proffesorName = proffesorName
         self.type = type
 
@@ -12,10 +11,6 @@ class Lesson:
         """
         Форматирует номер аудитории полученный с парсера
         """
-
-        # if (str(self.audienceNumber) == "ауд.: Спортивные площадки") or (str(self.audienceNumber) == "ауд.: ДОТ"):
-        #     self.audienceNumber = self.audienceNumber[6::]
-
         if any([
                     self.audienceNumber == "ауд.: Спортивные площадки",
                     self.audienceNumber == "ауд.: ДОТ"
