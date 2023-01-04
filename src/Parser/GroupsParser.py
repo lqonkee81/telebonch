@@ -49,10 +49,10 @@ class GroupsParser:
             groupsList = list()
 
             for i in tables.find_all('a', href=True):
-                group = Group.Group(i.text.strip(), i["href"])
+                group = Group(i.text.strip(), i["href"])
                 groupsList.append(group)
 
-            facult = Facult.Facult(facultName, groupsList)
+            facult = Facult(facultName, groupsList)
             facultsList.append(facult)
 
         return facultsList

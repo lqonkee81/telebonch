@@ -3,6 +3,9 @@ Schedule - Абстракция расписания
 Lesson - Абстракция занятия
 """
 
-from Schedule import StudentDaySchedule
-from Schedule import StudentLesson
-from Schedule import WeekStudentSchedule
+from Schedule.StudentDaySchedule import StudentDaySchedule
+from Schedule.StudentLesson import StudentLesson
+from Schedule.WeekStudentSchedule import StudentWeekSchedule
+from Schedule.ProfDayShedule import ProfDaySchedule
+from Schedule.ProfLesson import ProfLesson
+from Schedule.ProfWeekSchedule import ProfWeekSchedule

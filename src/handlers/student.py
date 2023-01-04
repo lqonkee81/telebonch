@@ -4,11 +4,13 @@
 
 from aiogram import Dispatcher, types
 
-import Parser.ScheduleProfesorParser
+
 import keyboards
 from DataBase import DataBaseExceptions
 from DataBase import DbHandler
-from Parser.ScheduleStudentParser import ScheduleStudentParser
+
+from Parser import ScheduleStudentParser
+from Parser import ScheduleProfesorParser
 
 DESCRIPTION = """
 Этот бот разрабатывается для помощи бедным студентам, дабы те могли как нормальные люди смотреть расписание.
@@ -73,8 +75,8 @@ async def prof_shedule(message: types.Message) -> None:
     #
     # except:
     #     print("Something went wrong")
-
-    sch = await Parser.ScheduleProfesorParser.get_profersor_schedule(message.text)
+    pp = ScheduleProfesorParser(message.text)
+    await message.answer(str(await pp.get_profersor_schedule()))
 
 
 def register_handlers_student(dp: Dispatcher):

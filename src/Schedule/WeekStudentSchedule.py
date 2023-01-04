@@ -1,4 +1,4 @@
-class WeekSchedule:
+class StudentWeekSchedule:
     def __init__(self, daysScheduleList: list):
         self.daysScheduleList = daysScheduleList
         self.schedule_str = str()

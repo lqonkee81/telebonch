@@ -14,13 +14,16 @@ from Schedule import WeekStudentSchedule
 
 
 class ScheduleStudentParser:
-    def __init__(self, userGroup: str):
+    def __init__(self, userGroup: str, date = None):
         self.DEBUG = False
         self.logger = Logger()
 
         self.userGroup = userGroup
-        self.weekNum = None
-        self.scheduleDate = str(date.today())
+        self.date = date
+        if self.date is None:
+            self.scheduleDate = str(date.today())
+        else:
+            self.scheduleDate = date
 
         self.__HEADERS = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -29,7 +32,7 @@ class ScheduleStudentParser:
 
         self.folderWithHtmls = "../files/Schedules/Students/"
         self.userHtmlFolder = self.folderWithHtmls + userGroup + '/'
-        self.html = self.userHtmlFolder + "sch_" + str(self.__get_bonch_week_number()) + ".html"
+        self.html = self.userHtmlFolder + "sch_" + str(self.get_bonch_week_number()) + ".html"
 
         self.url = str(self.__make_url())
         self.create_directories()
@@ -51,13 +54,19 @@ class ScheduleStudentParser:
             os.mkdir(self.userHtmlFolder)
             self.logger.warning(f"Was created directory {self.userHtmlFolder}", __name__)
 
-    def __get_bonch_week_number(self):
+    def get_bonch_week_number(self):
         day, month = datetime.now().day, datetime.now().month
 
-        firstStydyWeek = date(datetime.now().year, 9, 1).isocalendar()[1]  # Номер первой учебной недели в году
-        weekNumberInYear = date(datetime.now().year, int(month), int(day)).isocalendar()[
-                               1] + 1  # Номер недели на текущий момент
-        bonchWeek = weekNumberInYear - firstStydyWeek
+        if 1 <= datetime.now().month <= 8:
+            year = datetime.now().year - 1
+        else:
+            year = datetime.now().year
+
+        # firstStudyWeek = date(datetime.now().year - 1, 9, 1).isocalendar()[1]  # Номер первой учебной недели в году
+        firstStudyWeek = date(year, 9, 1).isocalendar()[1]  # Номер первой учебной недели в году
+        weekNumberInYear = date(year, int(month), int(day)).isocalendar()[1] + 1  # Номер недели на текущий момент
+        additionalWeeks = date(year, 12, 31).isocalendar()[1] # Исправляет баг при переходе к новому году
+        bonchWeek = (weekNumberInYear + additionalWeeks) - firstStudyWeek
 
         return bonchWeek
 
@@ -71,7 +80,7 @@ class ScheduleStudentParser:
         self.logger.info("Making url", __name__)
 
         groupLink = "https://www.sut.ru/studentu/raspisanie/raspisanie-zanyatiy-studentov-ochnoy-i-vecherney-form-obucheniya"
-        gp = GroupsParser.GroupsParser()
+        gp = GroupsParser()
         facultsList = gp.get_facults_list()
 
         for facult in facultsList:
@@ -130,8 +139,8 @@ class ScheduleStudentParser:
         lines = lines[1::]
 
         weekDays = weekDaysTable.find("div", class_="vt237 vt237a").find_all_next("div", class_="vt237")
-        daysList = list()
 
+        daysList = list()
         for day in weekDays:
             wd = day.find_next("div", class_='vt238')
 
@@ -166,22 +175,30 @@ class ScheduleStudentParser:
                     lesType = scheduleDay[lesson].find("div", class_="vt243")
 
                 if lesName is not None:
-                    les = StudentLesson.Lesson(name=lesName.text.strip(),
-                                               time=times[lesson],
-                                               audienceNumber=audinceNumber.text.strip(),
-                                               proffesorName=lesProfessor.text.strip(),
-                                               type=lesType.text.strip(),
-                                               number=numbers[lesson])
+                    les = StudentLesson.StudentLesson(name=lesName.text.strip(),
+                                                      time=times[lesson],
+                                                      audienceNumber=audinceNumber.text.strip(),
+                                                      proffesorName=lesProfessor.text.strip(),
+                                                      type=lesType.text.strip(),
+                                                      number=numbers[lesson])
                     lessList.append(les)
 
-            scD = StudentDaySchedule.DaySchedule(weekDay=6 * '=' + daysList[i].upper() + 6 * '=',
-                                                 lessonsList=lessList.copy())
+            scD = StudentDaySchedule(weekDay=6 * '=' + daysList[i].upper() + 6 * '=',
+                                                        lessonsList=lessList.copy())
             days.append(scD)
 
-        schedule = WeekStudentSchedule.WeekSchedule(days)
+        schedule = WeekStudentSchedule.StudentWeekSchedule(days)
 
         return str(schedule)
 
     async def get_all_groups_html(self):
         groupsList = await Parser.GroupsParser.getGroupsList()
         return str(groupsList)
+
+
+if __name__ == "__main__":
+    gp = GroupsParser()
+
+    for i in gp:
+        ssp = ScheduleStudentParser(userGroup=i,
+                                    date="2022-11-28")

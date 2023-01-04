@@ -1,4 +1,4 @@
-class Lesson:
+class StudentLesson:
     def __init__(self, name: str, number: str, time: str, audienceNumber: str, proffesorName: str, type: str):
         self.name = name
         self.number = number
